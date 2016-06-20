@@ -1,11 +1,20 @@
 ---
-- name: install letsencrypt tool
+- name: install letsencrypt required packages
   apt: name={{ item }} state=present
   with_items:
-    - "letsencrypt"
+    - "python-dev"
+    - "python-virtualenv"
+    - "libpython-dev"
+    - "augeas-lenses"
+    - "dialog"
+    - "libaugeas0"
+    - "libffi-dev"
+
+- name: install letsencrypt tool
+  git: repo=https://github.com/letsencrypt/letsencrypt dest=/opt/letsencrypt update=no
 
 - name: run letsencrypt
-  shell: letsencrypt certonly --webroot --w {{ letsencrypt_root }} -d {{ letsencrypt_domain }} --non-interactive --email={{ letsencrypt_email }} --agree-tos creates=/etc/letsencrypt/live/{{ letsencrypt_domain }}/fullchain.pem
+  shell: /opt/letsencrypt/letsencrypt-auto certonly -a webroot --webroot-path="{{ letsencrypt_root }}" -d "{{ letsencrypt_domain }}" --non-interactive --email="{{ letsencrypt_email }}" --agree-tos creates="/etc/letsencrypt/live/{{ letsencrypt_domain }}/fullchain.pem"
   notify:
     - restart nginx
 
