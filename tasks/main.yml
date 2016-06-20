@@ -1,4 +1,12 @@
 ---
+- name: Check if nginx is installed
+  command: dpkg-query -l nginx
+  register: deb_check
+
+- name: Execute script if nginx is not installed
+  fail: msg="Nginx could not be detected. It is required to be installed."
+  when: deb_check.stdout.find('no packages found') != -1
+
 - name: install letsencrypt required packages
   apt: name={{ item }} state=present
   with_items:
