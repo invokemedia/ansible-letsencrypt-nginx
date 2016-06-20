@@ -1,0 +1,3 @@
+---
+- name: create CRON task for nginx-reload
+  cron: name="reload-nginx" minute=35 hour=2 day=1 job="/etc/init.d/nginx reload" state=present

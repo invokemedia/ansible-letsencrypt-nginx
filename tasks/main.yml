@@ -1,0 +1,8 @@
+---
+- name: setup Letsencrypt for nginx
+  shell: letsencrypt certonly --webroot --w {{ letsencrypt_root }} -d {{ letsencrypt_domain }} --non-interactive --email={{ letsencrypt_email }} --agree-tos creates=/etc/letsencrypt/live/{{ letsencrypt_domain }}/fullchain.pem
+  notify:
+    - restart nginx
+
+- include: cron-renew.yml
+- include: cron-reload-nginx.yml

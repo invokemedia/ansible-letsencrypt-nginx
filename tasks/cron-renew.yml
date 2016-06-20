@@ -1,0 +1,3 @@
+---
+- name: create CRON task for auto-renew
+  cron: name="add-autorenew" minute=30 hour=2 day=1 job="letsencrypt renew >> /var/log/le-renew.log" state=present
