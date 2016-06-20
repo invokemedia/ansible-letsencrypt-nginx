@@ -1,5 +1,10 @@
 ---
-- name: setup Letsencrypt for nginx
+- name: install letsencrypt tool
+  apt: name={{ item }} state=present
+  with_items:
+    - "letsencrypt"
+
+- name: run letsencrypt
   shell: letsencrypt certonly --webroot --w {{ letsencrypt_root }} -d {{ letsencrypt_domain }} --non-interactive --email={{ letsencrypt_email }} --agree-tos creates=/etc/letsencrypt/live/{{ letsencrypt_domain }}/fullchain.pem
   notify:
     - restart nginx
