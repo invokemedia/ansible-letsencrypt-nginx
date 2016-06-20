@@ -43,7 +43,7 @@ Here is how you would use the default setup setup.
     letsencrypt_domain: example.com
     letsencrypt_email: email@example.com
   roles:
-    - { role: invokemedia.letsencryptnginx }
+    - { role: invokemedia.letsencrypt-nginx }
 ```
 
 License
