@@ -1,7 +1,7 @@
 Ansible Letsencrypt Nginx
 =========================
 
-> Ansible scripts that installs letsencrypt and adds a domain
+> Ansible script that installs letsencrypt and adds a domain
 
 Requirements
 ------------
