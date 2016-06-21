@@ -18,7 +18,7 @@ Role Variables
 
 ```
 # the root of the public site
-letsencrypt_root: /var/www/html/laravel/public
+letsencrypt_root: /var/www/html/public
 # the domain we are adding
 letsencrypt_domain: example.com
 # the email to use for letsencrypt
