@@ -46,6 +46,36 @@ Here is how you would use the default setup setup.
     - { role: invokemedia.letsencrypt-nginx }
 ```
 
+Example Nginx Config
+-------------------------
+
+```
+# redirect all traffic to https://wwww
+server {
+    listen 80;
+    listen [::]:80 default_server;
+    server_name example.com;
+    return 301 https://www.example.com$request_uri;
+}
+
+server {
+    listen 80;
+    listen [::]:80 default_server;
+    server_name www.example.com;
+    return 301 https://www.example.com$request_uri;
+}
+
+server {
+    listen 443 ssl;
+
+    server_name www.example.com;
+
+    ssl_certificate /etc/letsencrypt/live/www.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/www.example.com/privkey.pem;
+
+    # ...
+```
+
 License
 -------
 
