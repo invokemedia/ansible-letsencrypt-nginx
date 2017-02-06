@@ -53,14 +53,14 @@ Example Nginx Config
 # redirect all traffic to https://wwww
 server {
     listen 80;
-    listen [::]:80 default_server;
+    listen [::]:80;
     server_name example.com;
     return 301 https://www.example.com$request_uri;
 }
 
 server {
     listen 80;
-    listen [::]:80 default_server;
+    listen [::]:80;
     server_name www.example.com;
     return 301 https://www.example.com$request_uri;
 }
