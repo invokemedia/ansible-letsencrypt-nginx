@@ -39,7 +39,7 @@ Here is how you would use the default setup setup.
 - hosts: web
   sudo: yes
   vars:
-    letsencrypt_root: /var/www/html/laravel/public
+    letsencrypt_root: /var/www/html/public
     letsencrypt_domain: example.com
     letsencrypt_email: email@example.com
   roles:
