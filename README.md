@@ -53,14 +53,15 @@ Example Nginx Config
 # redirect all traffic to https://wwww
 server {
     listen 80;
-    listen [::]:80;
+    listen [::]:80 default ipv6only=on; ## listen for ipv6
     server_name example.com;
     return 301 https://www.example.com$request_uri;
 }
 
+# if there is also support for www, like not the invoke stage site
 server {
     listen 80;
-    listen [::]:80;
+    listen [::]:80 default ipv6only=on; ## listen for ipv6
     server_name www.example.com;
     return 301 https://www.example.com$request_uri;
 }
