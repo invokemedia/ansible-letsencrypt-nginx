@@ -1,30 +1,58 @@
 ---
-- name: Check if nginx is installed
-  command: dpkg-query -l nginx
-  register: deb_check
+- name: add package repositories
+  apt_repository: repo={{ item }}
+  with_items:
+    - "ppa:certbot/certbot"
 
-- name: Execute script if nginx is not installed
-  fail: msg="Nginx could not be detected. It is required to be installed."
-  when: deb_check.stdout.find('no packages found') != -1
+- name: update package lists
+  apt: update_cache=yes cache_valid_time=3600
 
 - name: install letsencrypt required packages
   apt: name={{ item }} state=present
   with_items:
-    - "python-dev"
-    - "python-virtualenv"
-    - "libpython-dev"
-    - "augeas-lenses"
-    - "dialog"
-    - "libaugeas0"
-    - "libffi-dev"
+    - "certbot"
 
-- name: install letsencrypt tool
-  git: repo=https://github.com/letsencrypt/letsencrypt dest=/opt/letsencrypt update=no
+- name: Add SSL test block
+  blockinfile:
+    dest: "/etc/nginx/sites-enabled/default"
+    block: |
+          location ~ /.well-known {
+            allow all;
+          }
+    state: "present"
+    marker: ""
+    insertbefore: "}$"
 
-- name: run letsencrypt
-  shell: /opt/letsencrypt/letsencrypt-auto certonly -a webroot --webroot-path="{{ letsencrypt_root }}" -d "{{ letsencrypt_domain }}" --non-interactive --email="{{ letsencrypt_email }}" --agree-tos creates="/etc/letsencrypt/live/{{ letsencrypt_domain }}/fullchain.pem"
-  notify:
-    - restart nginx
+- name: use letsencrypt webroot plugin
+  command: certbot certonly -a webroot --webroot-path={{ letsencrypt_root }} -d {{ letsencrypt_domain }} --non-interactive --agree-tos --email {{ letsencrypt_email }} creates="/etc/letsencrypt/live/{{ letsencrypt_domain }}/fullchain.pem"
 
-- include: cron-renew.yml
-- include: cron-reload-nginx.yml
+- name: Delete lines in nginx to replace with new SSL block
+  lineinfile: dest="/etc/nginx/sites-enabled/default" state=absent regexp={{ item }}
+  with_items:
+    - (listen).*
+    - (server_name).*
+
+- name: Add SSL server block
+  blockinfile:
+    dest: "/etc/nginx/sites-enabled/default"
+    block: |
+      # redirect all traffic to https://
+      listen 80;
+      listen [::]:80 default ipv6only=on; ## listen for ipv6
+      server_name {{ letsencrypt_domain }};
+      return 301 https://{{ letsencrypt_domain }}$request_uri;
+      }
+      server {
+      listen 443 ssl;
+      server_name {{ letsencrypt_domain }};
+      ssl_certificate /etc/letsencrypt/live/{{ letsencrypt_domain }}/fullchain.pem;
+      ssl_certificate_key /etc/letsencrypt/live/{{ letsencrypt_domain }}/privkey.pem;
+    state: "present"
+    marker: ""
+    insertafter: ^server\s?\{
+
+- name: restart nginx
+  service: name=nginx state=restarted
+
+- name: create CRON task for auto-renew
+  cron: name="certbot-daily-renew" minute=30 hour=3 job="/usr/bin/certbot renew --quiet --renew-hook \"/bin/systemctl reload nginx\"" state=present
